@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+
+<head>
+  <script src="/js/jquery-1.4.3.js"></script>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    WEB_SOCKET_SWF_LOCATION = '/socket.io/';
+  </script>
+
+  <script src="/js/helpers.js"></script>
+
+  <script src="/js/websocket.js"></script>
+  <script src="/js/polymaps.js"></script>
+
+  <script src="/js/widgets/base.js"></script>
+  <script src="/js/widgets/logger.js"></script>
+  <script src="/js/widgets/graph.js"></script>
+  <script src="/js/widgets/count.js"></script>
+  <script src="/js/widgets/map.js"></script>
+
+  <title>Hummingbird</title>
+
+  <link rel="shortcut icon" type="image/png" href="/images/favicon.png" />
+
+  <link rel="stylesheet" media="all" href="/css/main.css" />
+  <link rel="stylesheet" media="all" href="/css/map.css" />
+  <link rel="stylesheet" media="all" href="/css/weekly.css" />
+</head>
+
+<body>
+
+  <h1>RIAx Realtime</h1>
+
+  <div class="hummingbird_graph" id="total">
+
+    <h2 class="graph_title">All Traffic: <span class="value">0</span> Actions / Second</h2>
+
+    <div class="axis_left"></div>
+    <div class="graph"></div>
+    <div class="axis_right"></div>
+
+  </div>
+
+  <div style="clear: both;"></div>
+
+  <div class="hummingbird_graph" id="pvs">
+
+    <h2 class="graph_title">Page Views:</h2>
+
+    <div class="axis_left"></div>
+    <div class="graph"></div>
+    <div class="axis_right"></div>
+
+  </div>
+
+  <div style="clear: both;"></div>
+
+  <div class="hummingbird_graph" id="clicks">
+
+    <h2 class="graph_title">Clicks:</h2>
+
+    <div class="axis_left"></div>
+    <div class="graph"></div>
+    <div class="axis_right"></div>
+
+  </div>
+
+  <div style="clear: both;"></div>
+
+  <div class="hummingbird_graph" id="videostarts">
+
+    <h2 class="graph_title">Videostarts:</h2>
+
+    <div class="axis_left"></div>
+    <div class="graph"></div>
+    <div class="axis_right"></div>
+
+  </div>
+
+  <div style="clear: both;"></div>
+
+  <button id="test_it" style="margin-left: 60px;">Send test traffic</button>
+  <button id="test_cart" style="margin-left: 60px;">Send test traffic to cart</button>
+
+  <div style="clear: both;"></div>
+
+  <div id="map_container" style="margin: 40px; width: 800px; height: 450px; position: relative;"></div>
+
+  <script>
+    $(document).ready(function() {
+      hummingbirdSocket = new Hummingbird.WebSocket();
+      hummingbirdSocket.start();
+
+      $("#total").hummingbirdGraph(hummingbirdSocket,
+                                 {
+                                   data: { total: true },
+								   graphHeight: 100
+                                 });
+
+      $("#pvs").hummingbirdGraph(hummingbirdSocket,
+										{
+											data: { pvs: true },
+											graphHeight: 100
+										});
+		$("#clicks").hummingbirdGraph(hummingbirdSocket,
+										{
+											data: { clicks: true },
+											graphHeight: 100
+										});
+		$("#videostarts").hummingbirdGraph(hummingbirdSocket,
+										{
+											data: { videostarts: true },
+											graphHeight: 100
+										});
+
+      $("#total h2.graph_title span.value").hummingbirdCount(hummingbirdSocket,
+                                                             {
+                                                               data: { total: true },
+                                                               every: 10
+                                                             });
+
+      $("#map_container").hummingbirdMap(hummingbirdSocket, { data: { location: true } });
+
+      new Hummingbird.Logger(window,
+                             hummingbirdSocket,
+                             {
+                               data: { cartAdds: true},
+                               every: 20
+                             });
+
+      $("#test_it").click(function(e) {
+        e.preventDefault();
+
+        var img = document.createElement('img');
+        img.src = "http://localhost:9000/tracking_pixel.gif?f=" + Math.ceil(Math.random() * 1000000)
+      });
+
+      $("#test_cart").click(function(e) {
+        e.preventDefault();
+
+        var img = document.createElement('img');
+        img.src = "http://localhost:9000/tracking_pixel.gif?events=scAdd&f=" + Math.ceil(Math.random() * 1000000)
+      });
+    });
+  </script>
+
+</body>
+</html>

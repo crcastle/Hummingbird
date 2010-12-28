@@ -1,0 +1,259 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us" lang="en-us">
+  <head>
+    <title>TufteGraph - Integration tests</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+    <script type="text/javascript" src="../raphael.js"></script>
+    <script type="text/javascript" src="../jquery.enumerable.js"></script>
+    <script type="text/javascript" src="../jquery.tufte-graph.js"></script>
+    <link rel="stylesheet" href="../tufte-graph.css" type="text/css" media="screen" charset="utf-8" />
+
+    <style>
+      body { font-family: georgia; font-size 14px; }
+      .test-case { float: left; text-align: center; margin-right: 50px;}
+      a, a:visited { color: black; }
+      h2 { font-size: 1.2em; clear: both;}
+      table { text-align: left; margin-bottom: 10px;}
+      .graph .label { font-size: 0.8em; }
+      .bar-A { color: #82293B; }
+      .bar-B { color: #E57536; }
+    </style>
+
+    <script type="text/javascript">
+      $(document).ready(function () {
+        commonTestData = [
+          [1000, {label: 'A'}],
+          [1300, {label: 'B'}],
+          [3600, {label: 'C'}],
+          [4000, {label: 'D'}],
+          [5200, {label: 'E'}],
+          [7000, {label: 'F', color: '#FFBE33'}],
+          [0,    {label: 'G'}]
+        ]
+
+        stackedTestData = [
+          [[2.0, 1.0, 0.6], {label: 'A'}],
+          [[2.4, 0.9, 2.0], {label: 'B'}],
+          [[1.5, 2.6, 0.4], {label: 'C', colors: $.fn.tufteBar.defaults.colors}],
+          [[0.0, 0.0, 0.0], {label: 'D'}],
+        ]
+
+        $('#defaults-graph').tufteBar({
+          data: commonTestData 
+        });
+
+        $('#static-properties-graph').tufteBar({
+          data: commonTestData,
+          barWidth: 0.8,
+          barLabel:  'Y',
+          axisLabel: 'X', 
+          color:     '#aa0000'
+        });
+
+        $('#dynamic-properties-graph').tufteBar({
+          data: commonTestData,
+          barWidth:  function(i) { return 0.5 + (i % 2) * 0.2 },
+          barLabel:  function(i) { return this[0] },
+          axisLabel: function(i) { return this[1].label }, 
+          color:     function(i) { 
+            return this[1].color || ['#E57536', '#82293B'][i % 2] 
+          }
+        });
+
+        $('#stacked-defaults-graph').tufteBar({
+          data: [
+            [[2.0, 1.0, 0.6]],
+            [[2.4, 0.9, 2.0]],
+            [[1.5, 2.6, 0.4]]
+          ]
+        });
+
+        $('#stacked-dynamic-graph').tufteBar({
+          data: stackedTestData,
+          barWidth:  function(i) { return 0.5 + (i % 2) * 0.2 },
+          barLabel:  function(i) { return $(this[0]).sum() },
+          axisLabel: function(i) { return this[1].label }, 
+          color:     function(i, stackedIndex) { 
+            return (this[1].colors || ['#82293B', '#E57536', '#FFBE33'])[stackedIndex % 3] 
+          }
+        });
+
+        $('#legend-defaults-graph').tufteBar({
+          data: stackedTestData,
+          legend: {
+            data: ["A", "B", "C"]
+          }
+        });
+
+        $('#legend-dynamic-graph').tufteBar({
+          data: stackedTestData,
+          legend: {
+            data: ["A", "B", "C"],
+            label: function(i) { return this + i },
+            color: function(i) { 
+              return ['#82293B', '#E57536', '#FFBE33'][i % 3] 
+            }
+          }
+        });
+        
+        $('#legend-colors-graph').tufteBar({
+          data: stackedTestData,
+          colors: ['#82293B', '#E57536', '#FFBE33'],
+          legend: {
+            data: ["A", "B", "C"]
+          }
+        });
+
+        $('#css-colors-graph').tufteBar({
+          data: commonTestData,
+          color: function() { 
+            $('body').append("<div id='colorhack' class='bar-" + this[1].label + "'></div>");
+            var barcolor = $('#colorhack').css("color");
+            $('#colorhack').remove();
+            return barcolor 
+          }
+        });
+        
+        var pass;
+        pass = false;
+        try {
+          $('#error-graph').tufteBar({
+            data: [
+              [1.0],
+              ["Bogus"]
+            ]
+          });
+        } catch(e) {
+          pass = (e == "Non-numeric value provided for y: Bogus");
+        }
+        $('#result-bar').text(pass ? 'Pass' : 'Fail');
+
+        pass = false;
+        try {
+          $('#error-graph').tufteBar({
+            data: [
+              [1.0],
+              [[0, "Bogus"]]
+            ]
+          });
+        } catch(e) {
+          pass = (e == "Non-numeric value provided for y: 0,Bogus");
+        }
+        $('#result-stacked').text(pass ? 'Pass' : 'Fail');
+
+        $([
+          ['0.99',      '0.99'],
+          [100,         '100'],
+          [1000,        '1,000'],
+          ['9999.9999', '9,999.9999'],
+          [10000000,    '10,000,000']
+        ]).each(function (index) {
+          input = this[0];
+          expected = this[1];
+          actual = $.tufteBar.formatNumber(input);
+
+          if ($.tufteBar.formatNumber(this[0]) == this[1])
+            pass = true;
+          else
+            pass = false;
+
+          $('#format-number').append('<tr><td>' + input + '</td><td>' + expected + '</td><td>' + actual + '</td><td>' + (pass ? 'Pass' : 'Fail') + '</td></tr>');
+        });
+
+        (function(table) {
+          table.before("<div id='data-table-1-graph' class='graph' style='width:200px; height: 150px'></div>")
+
+          $('#data-table-1-graph').tufteBar({
+            data: table.find('tr:gt(0)').collect(function() { 
+              column = function(e, n) { return $(e).find('td:nth-child(' + n + ')').text(); };
+              return [column(this, 2) * 1, {label: column(this, 1)}]
+            }),
+            axisLabel: function() { return this[1].label }
+          });
+        })($('#data-table-1'));
+      });
+    </script>
+  </head>
+  <body>
+    <h1><a href="../index.html">TufteGraph</a> - Integration Tests</h1>
+    <h2>Bar</h2>
+    <div class='test-case'>
+      <h3>Default</h3>
+      <div id='defaults-graph' class='graph' style='width:200px; height: 150px'></div>
+    </div>
+    <div class='test-case'>
+      <h3>Static properties</h3>
+      <div id='static-properties-graph' class='graph' style='width:200px; height: 150px'></div>
+    </div>
+    <div class='test-case'>
+      <h3>Dynamic properties</h3>
+      <div id='dynamic-properties-graph' class='graph' style='width:200px; height: 150px'></div>
+    </div>
+    <h2>Stacked Bar</h2>
+    <div class='test-case'>
+      <h3>Default</h3>
+      <div id='stacked-defaults-graph' class='graph' style='width:200px; height: 150px'></div>
+    </div>
+    <div class='test-case'>
+      <h3>Dynamic</h3>
+      <div id='stacked-dynamic-graph' class='graph' style='width:200px; height: 150px'></div>
+    </div>
+    <h2>Legends</h2>
+    <div class='test-case'>
+      <h3>Default</h3>
+      <div id='legend-defaults-graph' class='graph' style='width:200px; height: 150px'></div>
+    </div>
+    <div class='test-case'>
+      <h3>Dynamic</h3>
+      <div id='legend-dynamic-graph' class='graph' style='width:200px; height: 150px'></div>
+    </div>
+    <div class='test-case'>
+      <h3>Use graph colors</h3>
+      <div id='legend-colors-graph' class='graph' style='width:200px; height: 150px'></div>
+    </div>
+    <h2>Colors from CSS</h2>
+    <div class='test-case'>
+      <div id='css-colors-graph' class='graph' style='width:200px; height: 150px'></div>
+    </div>
+
+    <h2>Error Handling</h2>
+    <div class='test-case'>
+      <div id='error-graph' style='width:200px; height: 150px; display: none;'></div>
+      <table>
+        <tr>
+          <th>Test</th>
+          <th>Result</th>
+        </tr>
+        <tr><td>Non-numeric y-value for bar graph</td><td id='result-bar'>Not run</td></tr>
+        <tr><td>Non-numeric y-value for stacked graph</td><td id='result-stacked'>Not run</td></tr>
+      </table>  
+    </div>
+    <h2>formatNumber</h2>
+    <div class='test-case'>
+      <table id='format-number'>
+        <tr>
+          <th>Input</th>
+          <th>Expected</th>
+          <th>Actual</th>
+          <th>Status</th>
+        </tr>
+      </table>  
+    </div>
+    <h2>Using data from table</h2>
+    <div class='test-case'>
+      <table id='data-table-1'>
+        <tr>
+          <th>Label</th>
+          <th>Amount</th>
+        </tr>
+        <tr><td>A</td><td>1.0</td></tr>
+        <tr><td>B</td><td>1.3</td></tr>
+        <tr><td>C</td><td>3.6</td></tr>
+        <tr><td>D</td><td>4.0</td></tr>
+        <tr><td>E</td><td>5.2</td></tr>
+        <tr><td>F</td><td>7.0</td></tr>
+      </table>  
+    </div>
+  </body>
+</html>  

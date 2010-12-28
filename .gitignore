@@ -1,0 +1,4 @@
+*.swp
+/backups
+/config/app.json
+.settings.xml
