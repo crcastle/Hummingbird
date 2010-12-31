@@ -2,3 +2,4 @@
 /backups
 /config/app.json
 .settings.xml
+test/run_test.sh
