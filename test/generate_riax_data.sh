@@ -25,7 +25,8 @@ ext5[3]=homelink
 ext5[4]=picture
 
 modulo=4
-tracking_url="http://127.0.0.1:9000/tracking_pixel.gif"
+#tracking_url="http://127.0.0.1:9000/tracking_pixel.gif"
+tracking_url="http://ec2-50-16-98-34.compute-1.amazonaws.com:9000/tracking_pixel.gif"
 
 # output j tracking URLs with random query string values
 for j in {0..20}
@@ -42,6 +43,6 @@ do
 	e4=${ext4[${rand[1]}]}
 	e5=${ext5[${rand[2]}]}
 	e6=${ext6[${rand[3]}]}
-	command="ab -k -c 100 -n 1000 \"http://127.0.0.1:9000/tracking_pixel.gif?ext3=${e3}&ext4=${e4}&ext5=${e5}&ext6=${e6}\""
+	command="ab -k -c 1 -n 100 \"${tracking_url}?ext3=${e3}&ext4=${e4}&ext5=${e5}&ext6=${e6}\""
 	echo $command
 done
