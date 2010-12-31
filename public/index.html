@@ -142,7 +142,7 @@
         e.preventDefault();
 
         var img = document.createElement('img');
-        img.src = "http://localhost:9000/tracking_pixel.gif?events=scAdd&f=" + Math.ceil(Math.random() * 1000000)
+        img.src = "http://" + window.location.hostname + ":9000/tracking_pixel.gif?events=scAdd&f=" + Math.ceil(Math.random() * 1000000)
       });
     });
   </script>
