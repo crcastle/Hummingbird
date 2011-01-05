@@ -52,6 +52,7 @@ $(function() {
 		if (!chartOptions.measure instanceof String) return;
 		if (!chartOptions.aggregation instanceof String) return;
 
+		if (! socket.connected) { alert("Socket disconnected. Refresh page."); return; }
 		if (chart) chart.showLoading();
 		sendRequest($.toJSON(chartOptions));
 	});
