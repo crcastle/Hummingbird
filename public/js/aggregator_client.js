@@ -58,14 +58,21 @@ $(function() {
 	});
 });
 
+// global var to time the time per request (this is a crude way to do this)
+var startTime = 0;
+var endTime = 0;
+
 // initialize web socket
 var socket = new io.Socket()
 socket.on('connect', function() {
 	// websocket connected
 });
 socket.on('message', function(JSONdata) {
+	endTime = new Date();
 	data = $.parseJSON(JSONdata);
 	receiveData(data);
+	var requestDuration = endTime - startTime;
+	alert("Request duration = " + requestDuration + " milliseconds");
 });
 socket.on('disconnect', function() {
 	// websocket disconnected
@@ -75,6 +82,7 @@ socket.connect();
 // send request details to server
 function sendRequest(requestString) {
 	socket.send(requestString);
+	startTime = new Date();
 }
 
 // create a new chart with received chart data
