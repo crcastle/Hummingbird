@@ -25,7 +25,7 @@ ext5[3]=homelink
 ext5[4]=picture
 
 modulo=4
-tracking_url="http://127.0.0.1:9000/tracking_pixel.gif"
+tracking_url="http://localhost:9000/tracking_pixel.gif"
 #tracking_url="http://ec2-50-16-98-34.compute-1.amazonaws.com:9000/tracking_pixel.gif"
 
 # output j tracking URLs with random query string values
